@@ -85,13 +85,14 @@ type Export struct {
 
 /*
 A few notes learned from `Corkami` about parsing export directory:
-- like many data directories, Exports' size are not necessary, except for forwarding.
-- Characteristics, TimeDateStamp, MajorVersion and MinorVersion are not necessary.
-- the export name is not necessary, and can be anything.
-- AddressOfNames is lexicographically-ordered.
-- export names can have any value (even null or more than 65536 characters long,
-  with unprintable characters), just null terminated.
-- an EXE can have exports (no need of relocation nor DLL flag), and can use
+  - like many data directories, Exports' size are not necessary, except for forwarding.
+  - Characteristics, TimeDateStamp, MajorVersion and MinorVersion are not necessary.
+  - the export name is not necessary, and can be anything.
+  - AddressOfNames is lexicographically-ordered.
+  - export names can have any value (even null or more than 65536 characters long,
+    with unprintable characters), just null terminated.
+  - an EXE can have exports (no need of relocation nor DLL flag), and can use
+
 them normally
 - exports can be not used for execution, but for documenting the internal code
 - numbers of functions will be different from number of names when the file
@@ -109,6 +110,11 @@ func (pe *File) parseExportDirectory(rva, size uint32) error {
 	err := pe.structUnpack(&exportDir, fileOffset, exportDirSize)
 	if err != nil {
 		return errors.New(errorMsg)
+	}
+	// TODO
+	if exportDir.NumberOfNames > 5000 {
+		// clean all exports
+		exportDir = ImageExportDirectory{}
 	}
 	exp.Struct = exportDir
 
